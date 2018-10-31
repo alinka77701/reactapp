@@ -10,64 +10,119 @@ class App extends Component {
     super(props);
     this.websocket=new WebSocket(wsUri);
     this.state={
-      response: ' ',
-      bitcoinAddr: ' '
+      response: 'Please, wait while connection is established. When it happens, this text changes to "Connected!"',
+      bitcoinAddr: '1BwGf3z7n2fHk6NoVJNkV32qwyAYsMhkWf'
     }
   }
 
-  updateBitcoinAddr(bitcoinAddr){
-    this.setState({bitcoinAddr: bitcoinAddr.target.value});
+  updateBitcoinAddr(event){
+    event.preventDefault();
+    this.setState({bitcoinAddr: event.target.value});
   }
+  
   componentDidMount(){
-    this.websocket.onopen = function (evt) { console.log("connected"); };
-    this.websocket.onclose = function(evt) {  console.log("disconnected");};
-    this.websocket.onerror = function (evt) { console.log("error");};
-    this.websocket.onmessage = function (evt) {this.onMessage(evt) }.bind(this);
+    this.websocket.onopen = this.onOpen.bind(this);
+    this.websocket.onclose = this.onClose.bind(this);
+    this.websocket.onerror = this.onError.bind(this);
+    this.websocket.onmessage = this.onMessage.bind(this);
   }
+
   onMessage(evt){
     console.log(evt.data);
     this.setState({ response: evt.data });
   }
 
-  initWebSocket(evt) {
-    console.log("connecting...");
-    console.log("connected");
+  onClose(evt) {
+    console.log("disconnected");
+    this.setState({ response: "Disconnected! To open websocket again, plese, update the page." });
   }
 
-  ping() {
-     let msg = JSON.stringify({
-     "op":"ping"
-    });
-   this.websocket.send(msg);
+  onError(evt) {
+    console.log("error");
+    this.setState({ response: "Error!" });
   }
- 
+
+  onOpen(evt) {
+    console.log("connected");
+    this.setState({ response: "Connected!" });
+  }
+
+  close(){
+    this.websocket.close();
+  }
+
+  ping(){
+    this.doSend("ping");
+  }
+
+  subscribeToAllNewTransactions(){
+    this.doSend("unconfirmed_sub");
+  }
+
+  unsubscribeToAllNewTransactions(){
+    this.doSend("unconfirmed_unsub");
+  }
+  
+  subscribeToBlock(){
+    this.setState({ response: "You will receive a notification once a new block is found. When it happens, this text changes to a details of found block. " });
+    this.doSend("blocks_sub");
+  }
+  unsubscribeToBlock(){
+    this.setState({ response: "You have unsubscribed from a notification." });
+    this.doSend("blocks_unsub");
+  }
+  subscribeToAddress(){
+    this.setState({ response: "You have subscribed to a bitcoin address `"+this.state.bitcoinAddr+"`. You will receive notifications for all new bitcoin transactions. When it happens, this text changes to a details of a transaction. " });
+    let msg = JSON.stringify({
+      "op":"addr_sub","addr":this.state.bitcoinAddr
+     });
+    this.websocket.send(msg);
+  }
+
+  unsubscribeToAddress(){
+    this.setState({ response: "You have unsubscribed from a bitcoin address `"+this.state.bitcoinAddr+"`."});
+    let msg = JSON.stringify({
+      "op":"addr_unsub","addr":this.state.bitcoinAddr
+     });
+    this.websocket.send(msg);
+  }
+  doSend(action){
+    let msg = JSON.stringify({
+      "op":action
+     });
+    this.websocket.send(msg);
+  }
+
   render() {
     return (
       <div className="container">
         <div className="header">React WebSocket Application</div>
         <div className="block">
           <div className="block">
-            <Button name="Connect" function={this.initWebSocket.bind(this)}/>
-            <Button name="Ping" function={this.ping.bind(this)}/>
-            <Button name="Subscribe to notifications for all new bitcoin transactions"/>
-            <Button name="Unsubscribe from new  bitcoin transactions"/>
+            <Button name="Disconnect" action={this.close.bind(this)}/>
+            <Button name="Ping" action={this.ping.bind(this)}/>
+            <Button name="Subscribe to notifications for all new bitcoin transactions" action={this.subscribeToAllNewTransactions.bind(this)}/>
+            <Button name="Unsubscribe from new bitcoin transactions" action={this.unsubscribeToAllNewTransactions.bind(this)}/> 
           </div>
           <div className="block">
-            <Button name="Receive notifications when a new block is found"/>
-            <Button name="Unsubscribe from notifications when a new block is found"/>
-            <Button name="Receive new transactions for a specific bitcoin address"/>
-            <Button name="Unsubscribe from new transactions for a specific bitcoin address"/>
+            <Button name="Receive notifications when a new block is found" action={this.subscribeToBlock.bind(this)}/>
+            <Button name="Unsubscribe from notifications when a new block is found" action={this.unsubscribeToBlock.bind(this)}/>
+            <Button name="Receive new transactions for a specific bitcoin address" action={this.subscribeToAddress.bind(this)}/>
+            <Button name="Unsubscribe from new transactions for a specific bitcoin address" action={this.unsubscribeToAddress.bind(this)}/>
             <p>Type specific bitcoin address:</p>
             <input type="text" 
                 ref={((input)=>{this.textInput=input})}
                 className="bitcoin-addr"
-                value={this.state.bitcoinAddr}
-                onChangeText={bitcoinAddr=>this.updateBitcoinAddr(bitcoinAddr)}
+                placeholder={this.state.bitcoinAddr}
+                onChange={this.updateBitcoinAddr.bind(this)}
               /> 
           </div>
         </div>
         <div className="block">
-            <input id="response" readOnly={true}/>
+        <p>Response:</p>
+            <div id="response">
+            {this.state.response}
+            </div>
         </div>
       </div>
     );
