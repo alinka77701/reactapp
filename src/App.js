@@ -17,18 +17,20 @@ class App extends Component {
 
   updateBitcoinAddr(bitcoinAddr){
     this.setState({bitcoinAddr: bitcoinAddr.target.value});
-  
+  }
+  componentDidMount(){
+    this.websocket.onopen = function (evt) { console.log("connected"); };
+    this.websocket.onclose = function(evt) {  console.log("disconnected");};
+    this.websocket.onerror = function (evt) { console.log("error");};
+    this.websocket.onmessage = function (evt) {this.onMessage(evt) }.bind(this);
+  }
+  onMessage(evt){
+    console.log(evt.data);
+    this.setState({ response: evt.data });
   }
 
   initWebSocket(evt) {
     console.log("connecting...");
-    this.websocket.onopen = function (evt) { console.log("connected"); };
-    this.websocket.onclose = function(evt) {  console.log("disconnected");};
-    this.websocket.onmessage = function(evt) { 
-      console.log(evt.data);
-      this.setState({ response: evt.data });
-    };
-    this.websocket.onerror = function (evt) { console.log("error");};
     console.log("connected");
   }
 
@@ -65,9 +67,7 @@ class App extends Component {
           </div>
         </div>
         <div className="block">
-         
-            <input id="response" readOnly="true"/>
-         
+            <input id="response" readOnly={true}/>
         </div>
       </div>
     );
