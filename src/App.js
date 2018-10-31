@@ -9,8 +9,8 @@ class App extends Component {
     
     super(props);
     this.state={
-     
-      websocket : new WebSocket(wsUri)
+      websocket : new WebSocket(wsUri),
+      response: ' '
     }
   }
 
@@ -69,21 +69,24 @@ class App extends Component {
       <div className="container">
         <div className="header">React WebSocket Application</div>
         <div className="block">
-          <button className="btn-connect" onClick={this.connect.bind(this)}>Connect</button>
-          <button className="btn-ping" >Ping </button>
-          <button className="btn-subscribe-all">Subscribe to notifications for all new bitcoin transactions </button>
-          <button className="btn-unubscribe-all">Unsubscribe from new  bitcoin transactions </button>
-          <button className="btn-sunubscribe-block">Receive notifications when a new block is found</button>
-          <button className="btn-unsunubscribe-block">Unsubscribe from notifications when a new block is found</button>
-          <button className="btn-subscribe-one">Receive new transactions for a specific bitcoin address</button>
-          <p>Type Bitcoin address here:</p>
-          <input type="text" 
-              ref={((input)=>{this.textInput=input})}
-              className="bitcoin-addr"
-              
-              onKeyPress={this.handleKeyPress.bind(this)}
-            /> 
-          <button className="btn-unsunubscribe-one">Unsubscribe from new transactions for a specific bitcoin address</button>
+          <div className="block">
+            <button onClick={this.connect.bind(this)}>Connect</button>
+            <button >Ping </button>
+            <button >Subscribe to notifications for all new bitcoin transactions </button>
+            <button >Unsubscribe from new  bitcoin transactions </button>
+          </div>
+          <div className="block">
+            <button >Receive notifications when a new block is found</button>
+            <button >Unsubscribe from notifications when a new block is found</button>
+            <button> Receive new transactions for a specific bitcoin address</button>
+            <button>Unsubscribe from new transactions for a specific bitcoin address</button>
+            <p>Type specific bitcoin address:</p>
+            <input type="text" 
+                ref={((input)=>{this.textInput=input})}
+                className="bitcoin-addr"
+                onKeyPress={this.handleKeyPress.bind(this)}
+              /> 
+          </div>
         </div>
         <div className="block">
         <div id="consoleLog">
