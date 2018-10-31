@@ -1,68 +1,55 @@
 import React, { Component } from 'react';
 import './App.css';
-
+import './Button.js';
+import Button from './Button.js';
 var wsUri = "wss://ws.blockchain.info/inv";
 
 class App extends Component {
 
   constructor(props){
-    
     super(props);
     this.state={
       websocket : new WebSocket(wsUri),
-      response: ' '
+      response: ' ',
+      bitcoinAddr: ' '
     }
   }
 
-  handleKeyPress=(event)=>{
-    if(event.key=='Enter'){
-
-    }
-  }
-  send(str){
-    let msg = JSON.stringify({
-      str
-     });
-    // writeToScreen("CONNECTED");
-    this.websocket.send(msg);
-  }
-  connect(){
-    console.log("connecting");
-    this.testWebSocket();
+  updateBitcoinAddr(bitcoinAddr){
+    this.setState({bitcoinAddr: bitcoinAddr.target.value})
   }
 
-  testWebSocket() {
-    console.log("text");
-    
+  initWebSocket(evt) {
+    console.log("connecting...");
     this.state.websocket.onopen = function (evt) { this.onOpen() };
     this.state.websocket.onclose = function(evt) { this.onClose(evt)};
     this.state.websocket.onmessage = function(evt) { this.onMessage(evt) };
     this.state.websocket.onerror = function (evt) { this.onError(evt)};
-    this.onOpen();
+    console.log("connected");
   }
 
   onOpen() {
-    let msg = JSON.stringify({
-     "op":"unconfirmed_sub"
-    });
   
-   this.state.websocket.send(msg);
-    console.log("send");
   }
   
    onClose(evt) {
-  //  writeToScreen("DISCONNECTED");
+    console.log("disconnected");
   }
 
    onMessage(evt) {
      console.log(evt.data);
-   // websocket.close();
   }
 
    onError(evt) {
     console.log("error");
   }
 
+  ping() {
+     let msg = JSON.stringify({
+     "op":"ping"
+    });
+   this.state.websocket.send(msg);
+  }
  
   render() {
     return (
@@ -70,28 +57,29 @@ class App extends Component {
         <div className="header">React WebSocket Application</div>
         <div className="block">
           <div className="block">
-            <button onClick={this.connect.bind(this)}>Connect</button>
-            <button >Ping </button>
-            <button >Subscribe to notifications for all new bitcoin transactions </button>
-            <button >Unsubscribe from new  bitcoin transactions </button>
+            <Button name="Connect" function={this.initWebSocket.bind(this)}/>
+            <Button name="Ping" function={this.ping.bind(this)}/>
+            <Button name="Subscribe to notifications for all new bitcoin transactions"/>
+            <Button name="Unsubscribe from new  bitcoin transactions"/>
           </div>
           <div className="block">
-            <button >Receive notifications when a new block is found</button>
-            <button >Unsubscribe from notifications when a new block is found</button>
-            <button> Receive new transactions for a specific bitcoin address</button>
-            <button>Unsubscribe from new transactions for a specific bitcoin address</button>
+            <Button name="Receive notifications when a new block is found"/>
+            <Button name="Unsubscribe from notifications when a new block is found"/>
+            <Button name="Receive new transactions for a specific bitcoin address"/>
+            <Button name="Unsubscribe from new transactions for a specific bitcoin address"/>
             <p>Type specific bitcoin address:</p>
             <input type="text" 
                 ref={((input)=>{this.textInput=input})}
                 className="bitcoin-addr"
-                onKeyPress={this.handleKeyPress.bind(this)}
+                value={this.state.bitcoinAddr}
+                onChangeText={bitcoinAddr=>this.updateBitcoinAddr(bitcoinAddr)}
               /> 
           </div>
         </div>
         <div className="block">
-        <div id="consoleLog">
-          <p id="message">Console log</p>
-        </div>
+          <div id="consoleLog">
+            <p id="message">Console log</p>
+          </div>
         </div>
       </div>
     );
