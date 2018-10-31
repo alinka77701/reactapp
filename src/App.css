@@ -85,13 +85,9 @@ button:hover {
   float:left;
 }
 
-#consoleLog p {
-  font-size: 11px;
-  line-height: 150%;
-  overflow-wrap: break-word;
-}
 
-#consoleLog {
+
+#response {
   margin: 20px;
   border: solid 1px #999999;
   border-top-color: #CCCCCC;
@@ -102,6 +98,3 @@ button:hover {
   overflow-y: scroll;
 }
 
-.btn-unsunubscribe-block{
-  float:left;
-}

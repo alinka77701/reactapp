@@ -2,53 +2,41 @@ import React, { Component } from 'react';
 import './App.css';
 import './Button.js';
 import Button from './Button.js';
-var wsUri = "wss://ws.blockchain.info/inv";
+const wsUri = "wss://ws.blockchain.info/inv";
 
 class App extends Component {
 
   constructor(props){
     super(props);
+    this.websocket=new WebSocket(wsUri);
     this.state={
-      websocket : new WebSocket(wsUri),
       response: ' ',
       bitcoinAddr: ' '
     }
   }
 
   updateBitcoinAddr(bitcoinAddr){
-    this.setState({bitcoinAddr: bitcoinAddr.target.value})
+    this.setState({bitcoinAddr: bitcoinAddr.target.value});
+  
   }
 
   initWebSocket(evt) {
     console.log("connecting...");
-    this.state.websocket.onopen = function (evt) { this.onOpen() };
-    this.state.websocket.onclose = function(evt) { this.onClose(evt)};
-    this.state.websocket.onmessage = function(evt) { this.onMessage(evt) };
-    this.state.websocket.onerror = function (evt) { this.onError(evt)};
+    this.websocket.onopen = function (evt) { console.log("connected"); };
+    this.websocket.onclose = function(evt) {  console.log("disconnected");};
+    this.websocket.onmessage = function(evt) { 
+      console.log(evt.data);
+      this.setState({ response: evt.data });
+    };
+    this.websocket.onerror = function (evt) { console.log("error");};
     console.log("connected");
-  }
-
-  onOpen() {
-  
-  }
-  
-   onClose(evt) {
-    console.log("disconnected");
-  }
-
-   onMessage(evt) {
-     console.log(evt.data);
-  }
-
-   onError(evt) {
-    console.log("error");
   }
 
   ping() {
      let msg = JSON.stringify({
      "op":"ping"
     });
-   this.state.websocket.send(msg);
+   this.websocket.send(msg);
   }
  
   render() {
@@ -77,9 +65,9 @@ class App extends Component {
           </div>
         </div>
         <div className="block">
-          <div id="consoleLog">
-            <p id="message">Console log</p>
-          </div>
+         
+            <input id="response" readOnly="true"/>
+         
         </div>
       </div>
     );
