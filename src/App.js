@@ -2,13 +2,15 @@ import React, { Component } from 'react';
 import './App.css';
 
 var wsUri = "wss://ws.blockchain.info/inv";
-var websocket = new WebSocket(wsUri);
+
 class App extends Component {
 
   constructor(props){
+    
     super(props);
     this.state={
-      noteText:''
+     
+      websocket : new WebSocket(wsUri)
     }
   }
 
@@ -22,7 +24,7 @@ class App extends Component {
       str
      });
     // writeToScreen("CONNECTED");
-     websocket.send(msg);
+    this.websocket.send(msg);
   }
   connect(){
     console.log("connecting");
@@ -31,18 +33,20 @@ class App extends Component {
 
   testWebSocket() {
     console.log("text");
-    websocket.onopen = function (evt) { this.onOpen(evt).bind(this) };
-    websocket.onclose = function(evt) { this.onClose(evt) };
-    websocket.onmessage = function (evt) { this.onMessage(evt)};
-    websocket.onerror = function (evt) { this.onError(evt) };
+    
+    this.state.websocket.onopen = function (evt) { this.onOpen() };
+    this.state.websocket.onclose = function(evt) { this.onClose(evt)};
+    this.state.websocket.onmessage = function(evt) { this.onMessage(evt) };
+    this.state.websocket.onerror = function (evt) { this.onError(evt)};
+    this.onOpen();
   }
 
-  onOpen(evt) {
+  onOpen() {
     let msg = JSON.stringify({
      "op":"unconfirmed_sub"
     });
-   // writeToScreen("CONNECTED");
-    websocket.send(msg);
+  
+   this.state.websocket.send(msg);
     console.log("send");
   }
   
@@ -52,12 +56,11 @@ class App extends Component {
 
    onMessage(evt) {
      console.log(evt.data);
-   // writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>');
    // websocket.close();
   }
 
    onError(evt) {
-   // writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+    console.log("error");
   }
 
  
